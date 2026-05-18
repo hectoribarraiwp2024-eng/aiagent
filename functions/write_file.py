@@ -1,4 +1,5 @@
 import os
+from google.genai import types
 
 def write_file(working_directory, file_path, content):
     try:
@@ -13,7 +14,7 @@ def write_file(working_directory, file_path, content):
             return f'Error: Cannot write to "{file_path}" as it is a directory'
 
         os.makedirs(os.path.dirname(target_file), exist_ok=True)
-        
+
         with open(target_file, 'w') as file:
             file.write(content)
 
@@ -21,3 +22,22 @@ def write_file(working_directory, file_path, content):
 
     except Exception as e:
         return f"Error writing content: {e}"
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="writes content to a specified file path relative to the working directory, returning a success string if no errors are triggered",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="file path to write contents to, relative to the working directory",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="content to write to the specified file",
+            ),
+        },
+        required=["file_path", "content"],
+    ),
+)
