@@ -4,7 +4,7 @@ from google import genai
 import argparse
 from google.genai import types
 from config import SYSTEM_PROMPT
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def main():
     load_dotenv()
@@ -32,22 +32,29 @@ def main():
     if response.usage_metadata == None:
         raise RuntimeError("usage_metadata is None so the API request failed")
 
-    
     if args.verbose:
-        p_tok = response.usage_metadata.prompt_token_count
-        r_tok = response.usage_metadata.candidates_token_count
-        print(f"User prompt: {prompt}")
-        print(f"Prompt tokens: {p_tok}")
-        print(f"Response tokens: {r_tok}")
-    
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
+
     if not response.function_calls:
         print("Response:")
         print(response.text)
         return
 
+    function_responses = []
     for function_call in response.function_calls:
-        print(f"Calling function: {function_call.name}({function_call.args})")
+        result = call_function(function_call, args.verbose)
+        if (
+            not result.parts
+            or not result.parts[0].function_response
+            or not result.parts[0].function_response.response
+        ):
+            raise RuntimeError(f"Empty function response for {function_call.name}")
+        if args.verbose:
+            print(f"-> {result.parts[0].function_response.response}")
+        function_responses.append(result.parts[0])
 
+    
 
 if __name__ == "__main__":
     main()
