@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from google import genai
 import argparse
 from google.genai import types
+from config import SYSTEM_PROMPT
 
 def main():
     load_dotenv()
@@ -21,7 +22,11 @@ def main():
     prompt = args.user_prompt
 
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=messages)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash", 
+        contents=messages, 
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT, temperature=0),
+    )
 
     if response.usage_metadata == None:
         raise RuntimeError("usage_metadata is None so the API request failed")
