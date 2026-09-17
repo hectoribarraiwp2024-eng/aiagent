@@ -2,6 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
+from config import system_prompt
 def main():
     parser = argparse.ArgumentParser(description="chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
@@ -19,9 +20,10 @@ def main():
     )
 
     messages_list = [
-        {"role": "user", "content": args.user_prompt}
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": args.user_prompt},
     ]
-
+    
     generate_response(client, messages_list, args)
 
 def generate_response(client, messages_list, args):
