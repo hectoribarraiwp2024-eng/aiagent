@@ -1,8 +1,10 @@
 import os
 import argparse
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 from config import system_prompt
+from call_functions import available_functions
 def main():
     parser = argparse.ArgumentParser(description="chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
@@ -30,7 +32,14 @@ def generate_response(client, messages_list, args):
     response = client.chat.completions.create(
         model="openrouter/free",
         messages=messages_list,
+        tools=available_functions,
     )
+
+    message = response.choices[0].message
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            function_args = json.loads(tool_call.function.arguments or "{}")
+            print(f"Calling function: {tool_call.function.name}({function_args})")
 
     if response.usage == None:
         raise RuntimeError("responses usage property is None. Failed api request")
