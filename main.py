@@ -27,7 +27,9 @@ def main():
         {"role": "user", "content": args.user_prompt},
     ]
     for i in range(20):
-        generate_response(client, messages_list, args.verbose)
+        flag = generate_response(client, messages_list, args.verbose)
+        if flag:
+            break
         if i == 20:
             print("Exiting the loop maxiterations has been made")
             sys.exit(1)
@@ -52,7 +54,7 @@ def generate_response(client, messages_list, verbose):
     if not message.tool_calls:
         print("Response:")
         print(message.content)
-        return
+        return True
 
     for tool_call in message.tool_calls:
         if tool_call.type != "function":
